@@ -1,0 +1,46 @@
+version: '2'
+services:
+  producer:
+    build: ./producer/.
+    container_name: producer
+    depends_on:
+      - rabbit1
+  consumer:
+    build: ./consumer/.
+    container_name: consumer
+    depends_on:
+      - rabbit1
+      - producer
+  rabbit1:
+    image: "rabbitmq:3-management"
+    hostname: "rabbit1"
+    container_name: rabbit
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "SWQOKODSQALRPCLNMEQG"
+      RABBITMQ_DEFAULT_USER: "rabbitmq"
+      RABBITMQ_DEFAULT_PASS: "rabbitmq"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    ports:
+      - "15672:15672"
+      - "5672:5672"
+    labels:
+      NAME: "rabbitmq1"
+  cassandra-1:
+    image: cassandra
+    container_name: cassandra-1
+    environment:
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra-1"
+    ports:
+    - 7000
+    restart: always
+  cassandra-2:
+    image: cassandra
+    container_name: cassandra-2
+    environment:
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra-2"
+      CASSANDRA_SEEDS: "cassandra-1"
+    ports:
+    - 7000
+    depends_on:
+      - cassandra-1
+    restart: always
